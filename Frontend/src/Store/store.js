@@ -5,6 +5,9 @@ import {persist} from 'zustand/middleware'
 const userStore = create(
   persist((set,get)=>
   ({
+
+    loggedIn: false,
+
     userData:{
       name:"",
       email:"",
@@ -14,6 +17,15 @@ const userStore = create(
     setuserData:(data)=>set((state)=>({
       userData: {...state.userData,...data}
     })),
+
+    setLoggedIn: ()=>set(()=>({
+      loggedIn: true
+    })),
+
+    setLoggedOut:()=>set(()=>({
+      loggedIn:false
+    })),
+
     addtoCart:(item)=>set((state)=>({
       userData:{
         ...state.userData,
