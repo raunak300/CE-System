@@ -16,7 +16,13 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Protected>
+          <Route>
+
+          </Route>
+        </Protected>
       </Routes>
+
     </BrowserRouter>
     </>
   )
@@ -25,6 +31,6 @@ function App() {
 export default App
 
 
-function Protected(){
-
+export function Protected(){
+ 
 }

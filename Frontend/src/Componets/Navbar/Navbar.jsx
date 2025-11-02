@@ -3,13 +3,13 @@ import { ShoppingCart, MapPin, Search } from "lucide-react";
 
 const Navbar = () => {
   return (
-    <div className="w-full bg-gradient-to-r from-[#b7d8f7] to-[#e3f2fd] shadow-md py-3 px-6 flex items-center justify-between">
+    <div className="w-full bg-linear-to-r from-[#8fc7fb] to-[#a0b7c8] shadow-md py-3 px-6 flex items-center justify-between">
       {/* Left Section */}
       <div className="flex items-center gap-20">
-        {/* Logo / Name */}
-        <div className="text-2xl font-bold text-[#0f172a] tracking-tight">
-          Snackify
-        </div>
+        <div className="text-3xl font-bold bg-linear-to-r from-[#000000] to-[#0295ff] bg-clip-text text-transparent tracking-tight">
+  Snackify
+</div>
+
 
         {/* Delivering To */}
         <div className="flex items-center gap-2 bg-white/70 backdrop-blur-md px-4 py-2 rounded-full text-[#1e3a8a] font-medium shadow-sm hover:shadow transition">
