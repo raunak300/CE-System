@@ -63,63 +63,68 @@ const signup=async(req,res)=>{
     //find person with same email exist in userDB of supabase
 
     //supabase query
-    const { data:existingUser, error:fetchError } = await supabase
-    .from('UserData')
-    .select('*')
-    .eq('email',email)
-    .single()
-
-    if (fetchError && fetchError.code !== "PGRST116") {   //PGRST116 is counted in error only
-        return res.status(500).send({ message: "Database error" });
-    }
-
-
-    if(existingUser){
-        return res.status(409).send({message:"User Already Exist"});  //409 is conflict issues
-    }
-
-    //no user exist till now
-    //will use bcrypt to have new password 
-
-    const npass=await bcrypt.hash(password,10);
-
-    const {data:storedUser,error:insertError}=await supabase
-    .from('UserData')
-    .insert([{name,email,password:npass,address}])
-    .select() //return inserted rows
-
-    if(insertError){
-        return res.status(500).send({message:insertError.message})
-    }
-
-    console.log(storedUser)
-    //need to make token and store it in cookies
-
-    const userToken=jwt.sign({
-        email, userid:storedUser[0].id
-    },
-    process.env.JWT_SIGN
-
-    )
-
-   res.cookie("userCookie", userToken, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production', //  only true in production
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  maxAge: 24 * 60 * 60 * 1000
-});
-
-
-    return res.status(201).send({message:" Account made successfully", 
-        data:{
-            name:storedUser[0].name,
-            email:storedUser[0].email,
-            address:storedUser[0].address,
-            role:storedUser[0].role,
-            cart:[],
-
+    try {
+        const { data:existingUser, error:fetchError } = await supabase
+        .from('UserData')
+        .select('*')
+        .eq('email',email)
+        .single()
+    
+        if (fetchError && fetchError.code !== "PGRST116") {   //PGRST116 is counted in error only
+            return res.status(500).send({ message: "Database error" });
         }
-    })
+    
+    
+        if(existingUser){
+            return res.status(409).send({message:"User Already Exist"});  //409 is conflict issues
+        }
+    
+        //no user exist till now
+        //will use bcrypt to have new password 
+    
+        const npass=await bcrypt.hash(password,10);
+    
+        const {data:storedUser,error:insertError}=await supabase
+        .from('UserData')
+        .insert([{name,email,password:npass,address}])
+        .select() //return inserted rows
+    
+        if(insertError){
+            return res.status(500).send({message:insertError.message})
+        }
+    
+        console.log(storedUser)
+        //need to make token and store it in cookies
+    
+        const userToken=jwt.sign({
+            email, userid:storedUser[0].id
+        },
+        process.env.JWT_SIGN
+    
+        )
+    
+       res.cookie("userCookie", userToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', //  only true in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 24 * 60 * 60 * 1000
+    });
+    
+    
+        return res.status(201).send({message:" Account made successfully", 
+            data:{
+                name:storedUser[0].name,
+                email:storedUser[0].email,
+                address:storedUser[0].address,
+                role:storedUser[0].role,
+                cart:[],
+    
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).send({message:"server not working"})
+    }
 
 }
 
@@ -139,115 +144,125 @@ const login=async(req,res)=>{
 
     //email and password are okay it is now time to find user in db based on email
 
-    const {data:userData,error:fetchError}=await supabase
-    .from('UserData')
-    .select('*')
-    .eq('email',email)
-    .single()
-
-    if(fetchError){
-        if(fetchError.code==='PGRST116'){
-            return res.status(400).send({message:"no user exist with same email"})
+    try {
+        const {data:userData,error:fetchError}=await supabase
+        .from('UserData')
+        .select('*')
+        .eq('email',email)
+        .single()
+    
+        if(fetchError){
+            if(fetchError.code==='PGRST116'){
+                return res.status(400).send({message:"no user exist with same email"})
+            }
+            return res.status(500).send({message:"Database Error"})
         }
-        return res.status(500).send({message:"Database Error"})
-    }
-
-    //user is found and exist at data[0]
-
-    const check= await bcrypt.compare(password,userData.password)
-    if(check===false){
-        return res.status(409).send({message:"password does not match"})
-    }
-
-     const userToken=jwt.sign({
-        email, userid:userData.id
-    },
-    process.env.JWT_SIGN
-
-    )
-
-    const {data:cartData,error:fetcherror}=await supabase
-    .from('CartData')
-    .select('*')
-    .eq('user_id',userData.id)
-
-    let cart=[]
-
-    if(fetcherror){
-        if(fetcherror.code!=='PGRST116'){
-            return res.status(500).send({message:"Database Failed"})
+    
+        //user is found and exist at data[0]
+    
+        const check= await bcrypt.compare(password,userData.password)
+        if(check===false){
+            return res.status(409).send({message:"password does not match"})
         }
-    }
-
-    if(cartData && cartData.length>0){
-        cart=[...cartData]  
-    }
-
-   res.cookie("userCookie", userToken, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production', 
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  maxAge: 24 * 60 * 60 * 1000
-});
-
-
-    return res.status(200).send({message:"user logged in succesfully",
-         data:{
-            name:userData.name,
-            email:userData.email,
-            address:userData.address,
-            role:userData.role,
-            cart:cart,
-
+    
+         const userToken=jwt.sign({
+            email, userid:userData.id
+        },
+        process.env.JWT_SIGN
+    
+        )
+    
+        const {data:cartData,error:fetcherror}=await supabase
+        .from('CartData')
+        .select('*')
+        .eq('user_id',userData.id)
+    
+        let cart=[]
+    
+        if(fetcherror){
+            if(fetcherror.code!=='PGRST116'){
+                return res.status(500).send({message:"Database Failed"})
+            }
         }
-    })
+    
+        if(cartData && cartData.length>0){
+            cart=[...cartData]  
+        }
+    
+       res.cookie("userCookie", userToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 24 * 60 * 60 * 1000
+    });
+    
+    
+        return res.status(200).send({message:"user logged in succesfully",
+             data:{
+                name:userData.name,
+                email:userData.email,
+                address:userData.address,
+                role:userData.role,
+                cart:cart,
+    
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).send({message:"server not working"})
+    }
 
 }
 
 const check=async(req,res)=>{
 
     //currently this is normal then it will be replaced by redis call to send data to frontend
-    const usertoken=req.cookies?.userCookie;
-    if(!usertoken)
-        {return res.status(400).send({message:"unverified user"})}
-
-    const decoded=jwt.verify(usertoken,process.env.JWT_SIGN)
-
-    const id=decoded.userid
-
-    const {data:userData,error:usererror}=await supabase
-    .from('UserData')
-    .select('*')
-    .eq('id',id)
-    .single()
-
-    if(usererror){
-        return res.status(500).send({message:"database error"})
-    }
-
-    const {data:cartData,error:cartError}=await supabase
-    .from('CartData')
-    .select('*')
-    .eq('user_id',id)
-
-    if(cartError){
-        return res.status(500).send({message:"database error"})
-    }
-    let cart=[]
-    if(cartData.length>0){
-        cart=[...cartData]
-    }
-
-    return res.status(200).send({message:"this is userData",
-        data:{
-            name:userData.name,
-            email:userData.email,
-            address:userData.address,
-            role:userData.role,
-            cart:cart
+    try {
+        const usertoken=req.cookies?.userCookie;
+        if(!usertoken)
+            {return res.status(400).send({message:"unverified user"})}
+    
+        const decoded=jwt.verify(usertoken,process.env.JWT_SIGN)
+    
+        const id=decoded.userid
+    
+        const {data:userData,error:usererror}=await supabase
+        .from('UserData')
+        .select('*')
+        .eq('id',id)
+        .single()
+    
+        if(usererror){
+            return res.status(500).send({message:"database error"})
         }
-
-    })
+    
+        const {data:cartData,error:cartError}=await supabase
+        .from('CartData')
+        .select('*')
+        .eq('user_id',id)
+    
+        if(cartError){
+            return res.status(500).send({message:"database error"})
+        }
+        let cart=[]
+        if(cartData.length>0){
+            cart=[...cartData]
+        }
+    
+        return res.status(200).send({message:"this is userData",
+            data:{
+                name:userData.name,
+                email:userData.email,
+                address:userData.address,
+                role:userData.role,
+                cart:cart
+            }
+    
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).send({message:"server not working"})
+    }
 }
 
 module.exports={login,signup,check}
