@@ -102,18 +102,20 @@ const signup=async(req,res)=>{
 
     )
 
-    res.cookie("userCookie",userToken,{
-        httpOnly: true,
-        secure:true,
-        sameSite:'none',
-        maxAge: 24*60*60*1000
-    })
+   res.cookie("userCookie", userToken, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production', //  only true in production
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge: 24 * 60 * 60 * 1000
+});
+
 
     return res.status(201).send({message:" Account made successfully", 
         data:{
             name:storedUser[0].name,
             email:storedUser[0].email,
             address:storedUser[0].address,
+            role:storedUser[0].role,
             cart:[],
 
         }
@@ -123,7 +125,7 @@ const signup=async(req,res)=>{
 
 const login=async(req,res)=>{
 
-    const {email,password}=req.body;
+    const {role,email,password}=req.body;
     
     const emailcheck=isEmail(email)
     if(emailcheck.bool===false){
@@ -152,7 +154,7 @@ const login=async(req,res)=>{
 
     //user is found and exist at data[0]
 
-    const check= await bcrypt.compare(password,userData[0].password)
+    const check= await bcrypt.compare(password,userData.password)
     if(check===false){
         return res.status(409).send({message:"password does not match"})
     }
@@ -181,18 +183,20 @@ const login=async(req,res)=>{
         cart=[...cartData]  
     }
 
-    res.cookie("userCookie",userToken,{
-        httpOnly: true,
-        secure:true,
-        sameSite:'none',
-        maxAge: 24*60*60*1000
-    })
+   res.cookie("userCookie", userToken, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production', 
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge: 24 * 60 * 60 * 1000
+});
+
 
     return res.status(200).send({message:"user logged in succesfully",
          data:{
             name:userData.name,
             email:userData.email,
             address:userData.address,
+            role:userData.role,
             cart:cart,
 
         }
@@ -200,4 +204,50 @@ const login=async(req,res)=>{
 
 }
 
-module.exports={login,signup}
+const check=async(req,res)=>{
+
+    //currently this is normal then it will be replaced by redis call to send data to frontend
+    const usertoken=req.cookies?.userCookie;
+    if(!usertoken)
+        {return res.status(400).send({message:"unverified user"})}
+
+    const decoded=jwt.verify(usertoken,process.env.JWT_SIGN)
+
+    const id=decoded.userid
+
+    const {data:userData,error:usererror}=await supabase
+    .from('UserData')
+    .select('*')
+    .eq('id',id)
+    .single()
+
+    if(usererror){
+        return res.status(500).send({message:"database error"})
+    }
+
+    const {data:cartData,error:cartError}=await supabase
+    .from('CartData')
+    .select('*')
+    .eq('user_id',id)
+
+    if(cartError){
+        return res.status(500).send({message:"database error"})
+    }
+    let cart=[]
+    if(cartData.length>0){
+        cart=[...cartData]
+    }
+
+    return res.status(200).send({message:"this is userData",
+        data:{
+            name:userData.name,
+            email:userData.email,
+            address:userData.address,
+            role:userData.role,
+            cart:cart
+        }
+
+    })
+}
+
+module.exports={login,signup,check}

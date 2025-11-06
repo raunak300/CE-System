@@ -1,18 +1,34 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { LOGIN_URL } from "../../API/authAPI";
+import axios from 'axios'
+import userStore from "../../Store/store";
 
 const Login = () => {
   const [activeTab, setActiveTab] = useState("user");
-
+  const navigate=useNavigate()
+  const setuserData=userStore((state)=>state.setuserData)
   // Individual useStates for form fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const setLoggedIn = userStore((state) => state.setLoggedIn)
+  const setLoggedOut = userStore((state) => state.setLoggedOut)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     const loginData = { role: activeTab, email, password };
-    console.log("Login Data:", loginData);
-    // TODO: handle actual login logic (API call)
+    try {
+      const response= await axios.post(LOGIN_URL,loginData,{withCredentials:true})
+      if(response.status===200){
+        navigate('/')
+        setuserData(response.data.data);
+        setLoggedIn()
+      }
+    } catch (error) {
+      setLoggedOut()
+      alert(error)
+    }
+    
   };
 
   return (

@@ -46,8 +46,8 @@ export function FirstFill() {
       setLoading(true)
       try {
         const response = await axios.get(CHECK_URL, { withCredentials: true })
-        if (response.status === 200 && response.data?.user) {
-          setUserData(response.data.user)
+        if (response.status === 200 && response.data?.data) {
+          setUserData(response.data.data)
           setLoggedIn()
         } else {
           throw new Error('not authorized')

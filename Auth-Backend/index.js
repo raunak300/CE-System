@@ -18,7 +18,7 @@ app.use(cookieParser())
 
 const port=process.env.PORT;
 
-const Authroutes=require('./Route/Auth')
+const Authroutes=require('./Route/AuthRoutes')
 app.use('/api/user',Authroutes)
 
 

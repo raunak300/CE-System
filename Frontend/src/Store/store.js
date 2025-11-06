@@ -12,7 +12,8 @@ const userStore = create(
       name:"",
       email:"",
       address:"",
-      cart:[]
+      cart:[],
+      role:""
     },
     setuserData:(data)=>set((state)=>({
       userData: {...state.userData,...data}

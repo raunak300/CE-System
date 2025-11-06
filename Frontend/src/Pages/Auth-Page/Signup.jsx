@@ -1,18 +1,38 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { SIGNUP_URL } from "../../API/authAPI";
+import axios from "axios";
+import userStore from "../../Store/store";
+
 
 const Signup = () => {
   // Individual useState hooks
+  const navigate=useNavigate()
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState("");
-  const [areaPin, setAreaPin] = useState("");
+  const setuserData=userStore((state)=>state.setuserData)
+  const setLoggedIn = userStore((state) => state.setLoggedIn)
+  const setLoggedOut = userStore((state) => state.setLoggedOut)
 
-  const handleSignup = () => {
-    const userData = { name, email, password, address, areaPin };
-    console.log("User Signup Data:", userData);
-    // TODO: handle signup logic (API call or validation)
+
+  const handleSignup = async() => {
+    const userData = { name, email, password, address };
+    try {
+      const response=await axios.post(SIGNUP_URL,{name,email,password,address},{withCredentials:true})
+      if(response.status===201){
+        navigate('/')
+        //will be setting info in zustand also
+        setuserData(response.data);
+        setLoggedIn()
+      }else{
+        throw new Error("some issues");
+      }
+    } catch (error) {
+      setLoggedOut()
+      alert(error)
+    }
   };
 
   return (
@@ -88,23 +108,7 @@ const Signup = () => {
                          focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-
-          {/* Area Pin */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Area Pin
-            </label>
-            <input
-              type="text"
-              value={areaPin}
-              onChange={(e) => setAreaPin(e.target.value)}
-              placeholder="Enter your area pin code"
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
+         
           {/* Signup Button */}
           <button
             onClick={handleSignup}
