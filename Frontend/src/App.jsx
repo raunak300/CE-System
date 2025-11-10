@@ -6,21 +6,27 @@ import axios from 'axios'
 import Home from './Pages/Home/Home'
 import Login from './Pages/Auth-Page/Login'
 import Signup from './Pages/Auth-Page/Signup'
+import AdminCart from './Pages/AdminPage/AdminCart'
 
 import { CHECK_URL } from './API/authAPI'
 import userStore from './Store/store'
+import Category from './Pages/AdminPage/Category'
 
 function App() {
+  const userData = userStore((state) => state.userData)
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<FirstFill />}>
+          <Route element={<Protected />}>
+            <Route path="/" element={<RoleBasedHome />} />
 
-          <Route path="/" element={<Home />} />
+          </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
           <Route element={<Protected />}>
+            <Route path='/category/:category_name' element={<Category/>} />
           </Route>
 
         </Route>
@@ -31,8 +37,15 @@ function App() {
 
 export default App
 
+function RoleBasedHome() {
+  const userData = userStore((state) => state.userData)
 
-// 🔹 Checks user session on app load / refresh
+  if (!userData || !userData.role) return <div>Loading...</div>
+
+  return userData.role.toLowerCase() === "admin" ? <AdminCart /> : <Home />
+}
+
+// Checks user session on app load / refresh
 export function FirstFill() {
   const setUserData = userStore((state) => state.setuserData)
   const setLoggedIn = userStore((state) => state.setLoggedIn)
@@ -71,7 +84,7 @@ export function FirstFill() {
 }
 
 
-// 🔹 Protects specific routes after login
+// Protects specific routes after login
 export function Protected() {
   const navigate = useNavigate()
   const logged = userStore((state) => state.loggedIn)

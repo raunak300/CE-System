@@ -159,6 +159,7 @@ const login=async(req,res)=>{
         }
     
         //user is found and exist at data[0]
+        
     
         const check= await bcrypt.compare(password,userData.password)
         if(check===false){
