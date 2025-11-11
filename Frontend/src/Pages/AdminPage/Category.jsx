@@ -1,81 +1,129 @@
-import axios from "axios"
-import { useState,useEffect } from "react"
-import { useParams } from "react-router-dom"
-import { CALL_ITEM } from "../../API/authAPI"
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { CALL_ITEM } from "../../API/cartAPI";
+import { motion } from "framer-motion";
 
 const Category = () => {
-  const { category_name } = useParams()
-  const [categoryitem, setcategoryitem] = useState([])
-  const [loding, setloding] = useState(true)
+  const { category_name } = useParams();
+  const [categoryitem, setcategoryitem] = useState([]);
+  const [loading, setloading] = useState(true);
+  const [checkinfo, setcheckinfo] = useState(false);
+  const [quantity, setquantity] = useState({})
+  const [wholeChange, setwholeChange] = useState([])
 
-useEffect(() => {
-    const getCartData=()=>{
-        setloding(true)
-        try {
-            const response=axios.get(`${CALL_ITEM}/:${category_name}`,{withCredentials:true})
-            if(response.status===200){
-                setcategoryitem(response.data)
-            }
-
-        } catch (error) {
-            console.log(error)
-            alert("This is error : "+error)
-        }finally{
-            setloding(false)
-        }
+  const makeChange = (id, quantity) => {
+    const item=Number(quantity[id])
+    if(!item || item<=0){
+        alert("item must be greater than 0")
+        return;
     }
 
-    getCartData()
-    
-  }, [])
-  
+    const obj={
+        item_id:id,
+        Quantity:item
+    }
+
+    const filtered=wholeChange.filter((item)=>item.item_id !==id)
+    setwholeChange([...filtered,obj])
+    console.log(wholeChange)
+};
+
+
+  useEffect(() => {
+    const getCartData = async () => {
+      setloading(true);
+      try {
+        const response = await axios.get(`${CALL_ITEM}/${category_name}`, {
+          withCredentials: true,
+        });
+        if (response.status === 200) {
+          if (response.data.message === "no object") {
+            setcheckinfo(true);
+            return;
+          }
+          console.log(response.data.obj)
+          setcategoryitem(response.data.obj);
+        }
+      } catch (error) {
+        console.log(error);
+        alert("This is error: " + error);
+      } finally {
+        setloading(false);
+      }
+    };
+    getCartData();
+  }, [category_name]);
 
   return (
-    
-    <div className="p-6">
-        {loding===true ? 
-        <div>
-            <h2 className="text-2xl font-bold text-blue-800">
-            Category: {category_name}
-        </h2>
-        <div>
-            {/* will get catgeroy data from backend redis + backend */}
-            {
-                categoryitem.map((item,idx)=>(
-                    <div key={item.id}>
-                        <div>
-                            name: {item.name} Current_Quantity:{item.Quantity}
-                            addQuantity: <input type="text" value={"current quantity "+item.Quantity } 
-                            onChange={(e) }
-                            // now how should i update the innventory making a single call for all inventory will be messed up, means to much things to update on backend but sending a update call for each product will make too much db calls as thier can be lakhs of item updation and sending a object can also be problem as well
-                            />
+    <div className="min-h-screen bg-liear-to-b from-blue-50 to-white p-8">
+      <div className="text-center mb-10">
+        <h1 className="text-3xl font-extrabold text-blue-800 mb-2">
+          🛒 {category_name.replace('-', ' ').toUpperCase()} Inventory
+        </h1>
+        <p className="text-gray-600">
+          Manage or update the product details below.
+        </p>
+      </div>
 
-                            Description: {item.description} 
-
-                            <button>
-                                Make Change 
-                                {/* this will change allow change of decription and quantity change on click this it will  opwn render the input box with previous data */}
-                            </button>
-                            <button>
-                                save
-                                {/* this will store description and quantity changes in  */}
-                            </button>
-                        </div>
-                    </div>
-                ))
-            }
-
+      {loading ? (
+        <div className="flex justify-center items-center h-60">
+          <h2 className="text-lg text-gray-600 animate-pulse">Loading...</h2>
         </div>
+      ) : checkinfo ? (
+        <div className="text-center text-gray-600">
+          <h2>No items found for this category.</h2>
         </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {categoryitem.map((item) => (
+            <motion.div
+              key={item.item_id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 border border-gray-100 p-5 flex flex-col items-center space-y-4"
+            >
+              <img
+                src={item.Image_URL || "/placeholder-product.png"}
+                alt={item.name}
+                className="w-32 h-32 object-cover rounded-lg"
+              />
+              <h3 className="text-lg font-bold text-gray-800">{item.name}</h3>
+              <p className="text-sm text-gray-500 text-center">
+                {item.description || "No description available."}
+              </p>
 
-        :
-        <div>
-            loding...
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600 text-sm">Current Qty:</span>
+                <input
+                  type="number"
+                  className="w-20 px-2 py-1 border rounded-md text-center text-gray-700"
+                  value={item.Quantity}
+                  readOnly
+                />
+                 <span className="text-gray-600 text-sm">Add Qty:</span>
+                <input
+                  type="number"
+                  className="w-20 px-2 py-1 border rounded-md text-center text-gray-700"
+                  defaultValue={0}
+                  onChange={(e)=>setquantity({...quantity,[item.item_id]:e.target.value})}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-3">
+                <button className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-all"
+                onClick={(e)=>makeChange(item.item_id,quantity)}
+                >
+                  Save
+                </button>
+              </div>
+            </motion.div>
+          ))}
         </div>
-        
-    }
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default Category
+export default Category;

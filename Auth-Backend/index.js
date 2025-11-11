@@ -21,6 +21,9 @@ const port=process.env.PORT;
 const Authroutes=require('./Route/AuthRoutes')
 app.use('/api/user',Authroutes)
 
+const ItemRoutes=require('./Route/ItemsRoutes')
+app.use('/api/items',ItemRoutes)
+
 
 app.listen(port,(req,res)=>{
     console.log(`listening on port: ${port}`)
