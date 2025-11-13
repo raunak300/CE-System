@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { CALL_ITEM } from "../../API/cartAPI";
+import { CALL_ITEM, UPDATE_ITEM } from "../../API/cartAPI";
 import { motion } from "framer-motion";
 
 const Category = () => {
@@ -26,9 +26,28 @@ const Category = () => {
 
     const filtered=wholeChange.filter((item)=>item.item_id !==id)
     setwholeChange([...filtered,obj])
-    console.log(wholeChange)
 };
 
+  const updateSend=async()=>{
+    if(!wholeChange){
+        alert("thiere is nothing to update")
+        return;
+    }
+    const obj=wholeChange
+
+    try {
+      const response=await axios.post(UPDATE_ITEM,{obj},{withCredentials:true})
+      if(response.status===200){
+        alert(response)
+        return;
+      }
+      console.log(response.data.message)
+    } catch (error) {
+      console.log(error)
+      alert(error)
+    }
+
+  }
 
   useEffect(() => {
     const getCartData = async () => {
@@ -42,7 +61,6 @@ const Category = () => {
             setcheckinfo(true);
             return;
           }
-          console.log(response.data.obj)
           setcategoryitem(response.data.obj);
         }
       } catch (error) {
@@ -55,16 +73,31 @@ const Category = () => {
     getCartData();
   }, [category_name]);
 
+
+
   return (
     <div className="min-h-screen bg-liear-to-b from-blue-50 to-white p-8">
-      <div className="text-center mb-10">
+      <div className="text-center mb-10 flex flex-row gap-30">
         <h1 className="text-3xl font-extrabold text-blue-800 mb-2">
           🛒 {category_name.replace('-', ' ').toUpperCase()} Inventory
         </h1>
+        <div>
+            {
+                wholeChange.length>0 ?
+                <button onClick={()=>updateSend()} className="text-white text-l bg-blue-400  w-30 h-10 rounded=md">
+                    Update Inventory
+                </button>
+                :
+                <div>
+
+                </div>
+            
+            }
+        </div>
+      </div>
         <p className="text-gray-600">
           Manage or update the product details below.
         </p>
-      </div>
 
       {loading ? (
         <div className="flex justify-center items-center h-60">
