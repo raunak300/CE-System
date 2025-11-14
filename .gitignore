@@ -1,11 +1,9 @@
 Frontend/node_modules
 Auth-Backend/node_modules
-Cart-Backend/node_modules
-Email-Backend/node_modules
+Worker-Backend/node_modules
 
 Frontend/.env
 Auth-Backend/.env
-Cart-Backend/.env
-Email-Backend/.env
+Worker-Backend/.env
 
 docs

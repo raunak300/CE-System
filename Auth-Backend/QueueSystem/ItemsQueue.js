@@ -11,6 +11,7 @@ const queueReady = async () => {
       connection = await connectRedis()
       ItemUpdation = new Queue('IUPD-Queue', { connection })
       console.log("Queue initialized")
+      
     }
   } catch (error) {
     console.error("Redis/queue error:", error)
