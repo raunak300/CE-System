@@ -4,50 +4,57 @@ import axios from "axios";
 import { CALL_ITEM, UPDATE_ITEM } from "../../API/cartAPI";
 import { motion } from "framer-motion";
 
-const Category = () => {
+export default function Category() {
   const { category_name } = useParams();
   const [categoryitem, setcategoryitem] = useState([]);
   const [loading, setloading] = useState(true);
   const [checkinfo, setcheckinfo] = useState(false);
-  const [quantity, setquantity] = useState({})
-  const [wholeChange, setwholeChange] = useState([])
+  const [quantity, setquantity] = useState({});
+  const [wholeChange, setwholeChange] = useState([]);
+  const [saving, setSaving] = useState({});
+  const [updating, setUpdating] = useState(false);
 
-  const makeChange = (id, quantity) => {
-    const item=Number(quantity[id])
-    if(!item || item<=0){
-        alert("item must be greater than 0")
-        return;
+  const makeChange = (id, quantityObj) => {
+    const item = Number(quantityObj[id]);
+    if (!item || item <= 0) {
+      alert("Quantity must be greater than 0");
+      return;
     }
 
-    const obj={
-        item_id:id,
-        Quantity:item
-    }
+    const updatedItem = { item_id: id, quantity: item };
 
-    const filtered=wholeChange.filter((item)=>item.item_id !==id)
-    setwholeChange([...filtered,obj])
-};
+    const filtered = wholeChange.filter((i) => i.item_id !== id);
+    setwholeChange([...filtered, updatedItem]);
 
-  const updateSend=async()=>{
-    if(!wholeChange){
-        alert("thiere is nothing to update")
-        return;
+    setSaving((prev) => ({ ...prev, [id]: true }));
+    setTimeout(() => setSaving((prev) => ({ ...prev, [id]: false })), 800);
+  };
+
+  const updateSend = async () => {
+    if (!wholeChange.length) {
+      alert("Nothing to update");
+      return;
     }
-    const obj=wholeChange
 
     try {
-      const response=await axios.post(UPDATE_ITEM,{obj},{withCredentials:true})
-      if(response.status===200){
-        alert(response)
-        return;
-      }
-      console.log(response.data.message)
-    } catch (error) {
-      console.log(error)
-      alert(error)
-    }
+      setUpdating(true);
+      const response = await axios.post(
+        UPDATE_ITEM,
+        { obj: wholeChange },
+        { withCredentials: true }
+      );
 
-  }
+      if (response.status === 200) {
+        alert("Inventory updated successfully");
+        setwholeChange([]);
+      }
+    } catch (error) {
+      console.log(error);
+      alert("Update failed" + error);
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   useEffect(() => {
     const getCartData = async () => {
@@ -65,7 +72,7 @@ const Category = () => {
         }
       } catch (error) {
         console.log(error);
-        alert("This is error: " + error);
+        alert("Error: " + error);
       } finally {
         setloading(false);
       }
@@ -73,31 +80,25 @@ const Category = () => {
     getCartData();
   }, [category_name]);
 
-
-
   return (
-    <div className="min-h-screen bg-liear-to-b from-blue-50 to-white p-8">
-      <div className="text-center mb-10 flex flex-row gap-30">
-        <h1 className="text-3xl font-extrabold text-blue-800 mb-2">
-          🛒 {category_name.replace('-', ' ').toUpperCase()} Inventory
+    <div className="min-h-screen bg-linear-to-b from-blue-50 to-white p-8">
+      <div className="text-center mb-10 flex flex-row justify-between items-center">
+        <h1 className="text-3xl font-extrabold text-blue-800">
+          🛒 {category_name.replace("-", " ").toUpperCase()} Inventory
         </h1>
-        <div>
-            {
-                wholeChange.length>0 ?
-                <button onClick={()=>updateSend()} className="text-white text-l bg-blue-400  w-30 h-10 rounded=md">
-                    Update Inventory
-                </button>
-                :
-                <div>
 
-                </div>
-            
-            }
-        </div>
+        {wholeChange.length > 0 && (
+          <button
+            onClick={updateSend}
+            disabled={updating}
+            className={`px-5 py-2 rounded-lg text-white transition-all shadow-md ${
+              updating ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            {updating ? "Updating..." : "Update Inventory"}
+          </button>
+        )}
       </div>
-        <p className="text-gray-600">
-          Manage or update the product details below.
-        </p>
 
       {loading ? (
         <div className="flex justify-center items-center h-60">
@@ -114,49 +115,55 @@ const Category = () => {
               key={item.item_id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 border border-gray-100 p-5 flex flex-col items-center space-y-4"
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all border p-5 flex flex-col items-center space-y-4"
             >
               <img
                 src={item.Image_URL || "/placeholder-product.png"}
                 alt={item.name}
-                className="w-32 h-32 object-cover rounded-lg"
+                className="w-32 h-32 object-cover rounded-lg shadow-sm"
               />
+
               <h3 className="text-lg font-bold text-gray-800">{item.name}</h3>
+
               <p className="text-sm text-gray-500 text-center">
                 {item.description || "No description available."}
               </p>
 
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600 text-sm">Current Qty:</span>
+              <div className="flex items-center gap-3">
+                <span className="text-gray-600 text-sm">Current:</span>
                 <input
                   type="number"
-                  className="w-20 px-2 py-1 border rounded-md text-center text-gray-700"
-                  value={item.Quantity}
+                  className="w-20 px-2 py-1 border rounded-md text-center bg-gray-100"
+                  value={item.quantity}
                   readOnly
                 />
-                 <span className="text-gray-600 text-sm">Add Qty:</span>
+
+                <span className="text-gray-600 text-sm">Add:</span>
                 <input
                   type="number"
-                  className="w-20 px-2 py-1 border rounded-md text-center text-gray-700"
+                  className="w-20 px-2 py-1 border rounded-md text-center"
                   defaultValue={0}
-                  onChange={(e)=>setquantity({...quantity,[item.item_id]:e.target.value})}
+                  onChange={(e) =>
+                    setquantity({ ...quantity, [item.item_id]: e.target.value })
+                  }
                 />
               </div>
 
-              <div className="flex gap-3 pt-3">
-                <button className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-all"
-                onClick={(e)=>makeChange(item.item_id,quantity)}
-                >
-                  Save
-                </button>
-              </div>
+              <button
+                className={`px-4 py-2 w-24 text-white rounded-lg transition-all shadow-md ${
+                  saving[item.item_id]
+                    ? "bg-green-500"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+                onClick={() => makeChange(item.item_id, quantity)}
+              >
+                {saving[item.item_id] ? "Saved" : "Save"}
+              </button>
             </motion.div>
           ))}
         </div>
       )}
     </div>
   );
-};
-
-export default Category;
+}
