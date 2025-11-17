@@ -111,10 +111,4 @@ Completed screens:
 - Email invoice flow  
 -Email handling with cron workker
 
-
-- Stock change analytics  
-
 ---
-
-## 📁 Folder Structure
-
