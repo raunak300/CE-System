@@ -11,6 +11,7 @@ import AdminCart from './Pages/AdminPage/AdminCart'
 import { CHECK_URL } from './API/authAPI'
 import userStore from './Store/store'
 import Category from './Pages/AdminPage/Category'
+import UserCart from './Pages/UserPage/UserCart'
 
 function App() {
   const userData = userStore((state) => state.userData)
@@ -27,6 +28,7 @@ function App() {
 
           <Route element={<Protected />}>
             <Route path='/category/:category_name' element={<Category/>} />
+            <Route path='/user/category/:category_name'element={ <UserCart/> } />
           </Route>
 
         </Route>

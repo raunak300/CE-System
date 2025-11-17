@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
-
+import {useNavigate} from 'react-router-dom'
 const HPage = () => {
   const [showData, setShowData] = useState([]);
+  const navigate=useNavigate()
+
+  const openCategory=(categoryName)=>{
+    navigate(`user/category/${categoryName.toLowerCase().replace(/ & /g,'-').replace(/\s+/g,'_') }`)
+  }
 
   useEffect(() => {
     const data = [
@@ -70,6 +75,7 @@ const HPage = () => {
 
             <button
               className="mt-5 bg-[#1e3a8a] text-white px-6 py-2 rounded-full hover:bg-[#3b82f6] transition-all duration-300 shadow-sm"
+              onClick={()=>openCategory(item.name)}
             >
               Select
             </button>
