@@ -10,9 +10,10 @@ const userStore = create(
         name: "",
         email: "",
         address: "",
-        cart: [],
         role: "",
       },
+
+      Cart:[],
 
       setUserData: (data) =>
         set((state) => ({
@@ -21,71 +22,34 @@ const userStore = create(
 
       setLoggedIn: () => set(() => ({ loggedIn: true })),
       setLoggedOut: () => set(() => ({ loggedIn: false })),
-
-      // ⭐ ADD OR INCREMENT
-      addToCart: (item) =>
-        set((state) => {
-          const existing = state.userData.cart.find((i) => i.id === item.id);
-
-          if (existing) {
+        
+      addToCart:(item)=>set((state)=>{
+        let found= state.Cart.find((thing)=>thing.id!==item.id)
+        if(found){
             return {
-              userData: {
-                ...state.userData,
-                cart: state.userData.cart.map((i) =>
-                  i.id === item.id
-                    ? { ...i, quantity: i.quantity + 1 }
-                    : i
-                ),
-              },
-            };
-          }
-
-          return {
-            userData: {
-              ...state.userData,
-              cart: [...state.userData.cart, { ...item, quantity: 1 }],
-            },
-          };
-        }),
-
-      // ⭐ DECREMENT OR REMOVE
-      decrementFromCart: (id) =>
-        set((state) => {
-          const existing = state.userData.cart.find((i) => i.id === id);
-          if (!existing) return state;
-
-          if (existing.quantity === 1) {
-            // remove item
-            return {
-              userData: {
-                ...state.userData,
-                cart: state.userData.cart.filter((i) => i.id !== id),
-              },
-            };
-          }
-
-          return {
-            userData: {
-              ...state.userData,
-              cart: state.userData.cart.map((i) =>
-                i.id === id ? { ...i, quantity: i.quantity - 1 } : i
-              ),
-            },
-          };
-        }),
-
-      clearCart: () =>
-        set((state) => ({
-          userData: { ...state.userData, cart: [] },
-        })),
-
+              Cart: state.Cart.map((p) =>
+                  p.id === item.id ? { ...p, qty: item.qty } : p
+            
+        )
+        }
+      }
+      return{
+        
+      }
+          
+      })
+      ,
+      removeFromCart:(id)=>
+        set((state)=>{
+          let arr=state.Cart.filter((item)=>item.id)
+        })
+      ,
       clearUserData: () =>
         set(() => ({
           userData: {
             name: "",
             email: "",
             address: "",
-            cart: [],
           },
         })),
     }),

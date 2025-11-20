@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../../Componets/Navbar/Navbar";
+import Navbar from '../../../Componets/Navbar/Navbar'
 import axios from "axios";
-import { USER_ITEM } from "../../API/cartAPI";
+import { USER_ITEM } from "../../../API/cartAPI";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaPlus, FaMinus } from "react-icons/fa";
-import userStore from "../../Store/store"
+import userStore from "../../../Store/store"
+import StickyBar from "../../../Componets/StickeyBar/StickyBar";
 
 const UserCart = () => {
   const { category_name } = useParams();
@@ -22,10 +23,7 @@ const UserCart = () => {
   useEffect(() => {
     const loadItems = async () => {
       try {
-        const res = await axios.get(USER_ITEM, {
-          params: { category: category_name },
-          withCredentials: true,
-        });
+        const res = await axios.get(`${USER_ITEM}/categories/${category_name}`, {withCredentials: true});
         setItems(res.data.items || []);
       } catch (err) {
         console.log("Error fetching items:", err);
@@ -52,6 +50,7 @@ const UserCart = () => {
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 flex flex-col items-center py-10">
       <Navbar />
+      <StickyBar />
 
       {/* Items Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 px-6 w-full max-w-6xl mt-10">

@@ -75,7 +75,7 @@ export default function Category() {
         alert("Error: " + error);
       } finally {
         setloading(false);
-      }
+      } 
     };
     getCartData();
   }, [category_name]);
