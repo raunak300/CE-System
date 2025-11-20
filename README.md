@@ -112,3 +112,6 @@ Completed screens:
 -Email handling with cron workker
 
 ---
+## 🖼️ System Architecture
+
+![Architecture Diagram](./Image/Working.png)
