@@ -1,6 +1,5 @@
 const nodemailer = require("nodemailer");
-
-const Uemail = "cesys.connect@gmail.com"
+const Uemail = process.env.GMAIL_USER
 const pass = process.env.PASSWORD;
 
 const transporter = nodemailer.createTransport({

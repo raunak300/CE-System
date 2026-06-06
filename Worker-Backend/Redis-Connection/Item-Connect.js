@@ -9,8 +9,8 @@ const connectRedis=async ()=>{
         username: 'default',
         password: process.env.REDIS_KEY,
           maxRetriesPerRequest: null,
-            host: 'redis-19714.c244.us-east-1-2.ec2.cloud.redislabs.com',
-            port: 19714,
+            host: 'redis-17934.c10.us-east-1-4.ec2.cloud.redislabs.com',
+port: 17934,
         
     });
 

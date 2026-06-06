@@ -7,7 +7,7 @@ import userStore from "../../Store/store";
 const Login = () => {
   const [activeTab, setActiveTab] = useState("user");
   const navigate=useNavigate()
-  const setuserData=userStore((state)=>state.setuserData)
+  const setuserData=userStore((state)=>state.setUserData)
   // Individual useStates for form fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

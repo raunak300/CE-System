@@ -49,7 +49,7 @@ function RoleBasedHome() {
 
 // Checks user session on app load / refresh
 export function FirstFill() {
-  const setUserData = userStore((state) => state.setuserData)
+  const setUserData = userStore((state) => state.setUserData)
   const setLoggedIn = userStore((state) => state.setLoggedIn)
   const setLoggedOut = userStore((state) => state.setLoggedOut)
   const navigate = useNavigate()

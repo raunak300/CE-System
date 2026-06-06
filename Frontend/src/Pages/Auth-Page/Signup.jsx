@@ -12,7 +12,7 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState("");
-  const setuserData=userStore((state)=>state.setuserData)
+  const setUserData=userStore((state)=>state.setUserData)
   const setLoggedIn = userStore((state) => state.setLoggedIn)
   const setLoggedOut = userStore((state) => state.setLoggedOut)
 
@@ -24,7 +24,7 @@ const Signup = () => {
       if(response.status===201){
         navigate('/')
         //will be setting info in zustand also
-        setuserData(response.data);
+        setUserData(response.data);
         setLoggedIn()
       }else{
         throw new Error("some issues");
